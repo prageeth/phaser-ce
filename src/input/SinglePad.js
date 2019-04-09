@@ -7,7 +7,7 @@
 
 /**
 * A single Phaser Gamepad
-* 
+*
 * @class Phaser.SinglePad
 * @constructor
 * @param {Phaser.Game} game - Current game instance.
@@ -121,7 +121,7 @@ Phaser.SinglePad.prototype = {
 
     /**
     * Add callbacks to this Gamepad to handle connect / disconnect / button down / button up / axis change / float value buttons.
-    * 
+    *
     * @method Phaser.SinglePad#addCallbacks
     * @param {object} context - The context under which the callbacks are run.
     * @param {object} callbacks - Object that takes six different callbak methods:
@@ -167,13 +167,13 @@ Phaser.SinglePad.prototype = {
 
     /**
     * Main update function called by Phaser.Gamepad.
-    * 
+    *
     * @method Phaser.SinglePad#pollStatus
     */
     pollStatus: function ()
     {
 
-        if (!this.connected || !this.game.input.enabled || !this.game.input.gamepad.enabled || (this._rawPad && this._rawPad.timestamp && (this._rawPad.timestamp === this._prevTimestamp)))
+        if (!this.connected || !this.game.input.enabled || !this.game.input.gamepad.enabled || !this._rawPad || (this._rawPad && this._rawPad.timestamp && (this._rawPad.timestamp === this._prevTimestamp)))
         {
             return;
         }
@@ -198,7 +198,7 @@ Phaser.SinglePad.prototype = {
                 }
             }
         }
-        
+
         for (var index = 0; index < this._axesLen; index++)
         {
             var value = this._rawPad.axes[index];
@@ -219,7 +219,7 @@ Phaser.SinglePad.prototype = {
 
     /**
     * Gamepad connect function, should be called by Phaser.Gamepad.
-    * 
+    *
     * @method Phaser.SinglePad#connect
     * @param {object} rawPad - The raw gamepad object
     */
@@ -264,7 +264,7 @@ Phaser.SinglePad.prototype = {
 
     /**
     * Gamepad disconnect function, should be called by Phaser.Gamepad.
-    * 
+    *
     * @method Phaser.SinglePad#disconnect
     */
     disconnect: function ()
@@ -333,7 +333,7 @@ Phaser.SinglePad.prototype = {
 
     /**
     * Handles changes in axis.
-    * 
+    *
     * @method Phaser.SinglePad#processAxisChange
     * @param {object} axisState - State of the relevant axis
     */
@@ -361,7 +361,7 @@ Phaser.SinglePad.prototype = {
 
     /**
     * Handles button down press.
-    * 
+    *
     * @method Phaser.SinglePad#processButtonDown
     * @param {number} buttonCode - Which buttonCode of this button
     * @param {object} value - Button value
@@ -388,7 +388,7 @@ Phaser.SinglePad.prototype = {
 
     /**
     * Handles button release.
-    * 
+    *
     * @method Phaser.SinglePad#processButtonUp
     * @param {number} buttonCode - Which buttonCode of this button
     * @param {object} value - Button value
@@ -415,7 +415,7 @@ Phaser.SinglePad.prototype = {
 
     /**
     * Handles buttons with floating values (like analog buttons that acts almost like an axis but still registers like a button)
-    * 
+    *
     * @method Phaser.SinglePad#processButtonFloat
     * @param {number} buttonCode - Which buttonCode of this button
     * @param {object} value - Button value (will range somewhere between 0 and 1, but not specifically 0 or 1.
@@ -442,7 +442,7 @@ Phaser.SinglePad.prototype = {
 
     /**
     * Returns value of requested axis.
-    * 
+    *
     * @method Phaser.SinglePad#axis
     * @param {number} axisCode - The index of the axis to check
     * @return {number} Axis value if available otherwise false
@@ -461,7 +461,7 @@ Phaser.SinglePad.prototype = {
 
     /**
     * Returns true if the button is pressed down.
-    * 
+    *
     * @method Phaser.SinglePad#isDown
     * @param {number} buttonCode - The buttonCode of the button to check.
     * @return {boolean} True if the button is pressed down.
@@ -480,7 +480,7 @@ Phaser.SinglePad.prototype = {
 
     /**
     * Returns true if the button is not currently pressed.
-    * 
+    *
     * @method Phaser.SinglePad#isUp
     * @param {number} buttonCode - The buttonCode of the button to check.
     * @return {boolean} True if the button is not currently pressed down.
@@ -499,7 +499,7 @@ Phaser.SinglePad.prototype = {
 
     /**
     * Returns the "just released" state of a button from this gamepad. Just released is considered as being true if the button was released within the duration given (default 250ms).
-    * 
+    *
     * @method Phaser.SinglePad#justReleased
     * @param {number} buttonCode - The buttonCode of the button to check for.
     * @param {number} [duration=250] - The duration below which the button is considered as being just released.
@@ -517,7 +517,7 @@ Phaser.SinglePad.prototype = {
 
     /**
     * Returns the "just pressed" state of a button from this gamepad. Just pressed is considered true if the button was pressed down within the duration given (default 250ms).
-    * 
+    *
     * @method Phaser.SinglePad#justPressed
     * @param {number} buttonCode - The buttonCode of the button to check for.
     * @param {number} [duration=250] - The duration below which the button is considered as being just pressed.
@@ -536,7 +536,7 @@ Phaser.SinglePad.prototype = {
     /**
     * Returns the value of a gamepad button. Intended mainly for cases when you have floating button values, for example
     * analog trigger buttons on the XBOX 360 controller.
-    * 
+    *
     * @method Phaser.SinglePad#buttonValue
     * @param {number} buttonCode - The buttonCode of the button to check.
     * @return {number} Button value if available otherwise null. Be careful as this can incorrectly evaluate to 0.
@@ -555,7 +555,7 @@ Phaser.SinglePad.prototype = {
 
     /**
     * Reset all buttons/axes of this gamepad.
-    * 
+    *
     * @method Phaser.SinglePad#reset
     */
     reset: function ()
