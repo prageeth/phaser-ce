@@ -7,7 +7,7 @@
 *
 * Phaser - http://phaser.io
 *
-* v2.12.0 "2019-02-06" - Built: Tue Feb 05 2019 17:24:44
+* v1.0.1 "2019-04-09" - Built: Tue Apr 09 2019 18:08:51
 *
 * By Richard Davey http://www.photonstorm.com @photonstorm
 *
@@ -22651,7 +22651,7 @@ var Phaser = Phaser || { // jshint ignore:line
     * @constant Phaser.VERSION
     * @type {string}
     */
-    VERSION: '2.12.0',
+    VERSION: '1.0.1',
 
     /**
     * An array of Phaser game instances.
@@ -27481,12 +27481,12 @@ Phaser.Point.parse = function (obj, xProp, yProp)
 
     if (obj[xProp])
     {
-        point.x = parseFloat(obj[xProp], 10);
+        point.x = parseFloat(obj[xProp]);
     }
 
     if (obj[yProp])
     {
-        point.y = parseFloat(obj[yProp], 10);
+        point.y = parseFloat(obj[yProp]);
     }
 
     return point;
@@ -34582,15 +34582,7 @@ Phaser.Group.prototype.getIndex = function (child)
 Phaser.Group.prototype.getByName = function (name)
 {
 
-    for (var i = 0; i < this.children.length; i++)
-    {
-        if (this.children[i].name === name)
-        {
-            return this.children[i];
-        }
-    }
-
-    return null;
+    return this.getFirst('name', name);
 
 };
 
@@ -34838,11 +34830,15 @@ Phaser.Group.prototype.setAll = function (key, value, checkAlive, checkVisible, 
     key = key.split('.');
     operation = operation || 0;
 
-    for (var i = 0; i < this.children.length; i++)
+    var len = this.children.length;
+
+    for (var i = 0; i < len; i++)
     {
-        if ((!checkAlive || (checkAlive && this.children[i].alive)) && (!checkVisible || (checkVisible && this.children[i].visible)))
+        var child = this.children[i];
+
+        if ((!checkAlive || child.alive) && (!checkVisible || child.visible))
         {
-            this.setProperty(this.children[i], key, value, operation, force);
+            this.setProperty(child, key, value, operation, force);
         }
     }
 
@@ -34873,17 +34869,21 @@ Phaser.Group.prototype.setAllChildren = function (key, value, checkAlive, checkV
 
     operation = operation || 0;
 
-    for (var i = 0; i < this.children.length; i++)
+    var len = this.children.length;
+
+    for (var i = 0; i < len; i++)
     {
-        if ((!checkAlive || (checkAlive && this.children[i].alive)) && (!checkVisible || (checkVisible && this.children[i].visible)))
+        var child = this.children[i];
+
+        if ((!checkAlive || child.alive) && (!checkVisible || child.visible))
         {
-            if (this.children[i] instanceof Phaser.Group)
+            if (child instanceof Phaser.Group)
             {
-                this.children[i].setAllChildren(key, value, checkAlive, checkVisible, operation, force);
+                child.setAllChildren(key, value, checkAlive, checkVisible, operation, force);
             }
             else
             {
-                this.setProperty(this.children[i], key.split('.'), value, operation, force);
+                this.setProperty(child, key.split('.'), value, operation, force);
             }
         }
     }
@@ -34914,7 +34914,7 @@ Phaser.Group.prototype.checkAll = function (key, value, checkAlive, checkVisible
     {
         var child = this.children[i];
 
-        if ((!checkAlive || (checkAlive && child.alive)) && (!checkVisible || (checkVisible && child.visible)))
+        if ((!checkAlive || child.alive) && (!checkVisible || child.visible))
         {
             if (!this.checkProperty(child, key, value, force))
             {
@@ -34949,7 +34949,7 @@ Phaser.Group.prototype.checkAny = function (key, value, checkAlive, checkVisible
     {
         var child = this.children[i];
 
-        if ((!checkAlive || (checkAlive && child.alive)) && (!checkVisible || (checkVisible && child.visible)))
+        if ((!checkAlive || child.alive) && (!checkVisible || child.visible))
         {
             if (this.checkProperty(child, key, value))
             {
@@ -35130,9 +35130,11 @@ Phaser.Group.prototype.callAllExists = function (callback, existsValue)
 
     for (var i = 0; i < this.children.length; i++)
     {
-        if (this.children[i].exists === existsValue && this.children[i][callback])
+        var child = this.children[i];
+
+        if (child.exists === existsValue && child[callback])
         {
-            this.children[i][callback].apply(this.children[i], args);
+            child[callback].apply(child, args);
         }
     }
 
@@ -35244,20 +35246,19 @@ Phaser.Group.prototype.callAll = function (method, context)
 
     for (var i = 0; i < this.children.length; i++)
     {
-        callback = this.callbackFromArray(this.children[i], method, methodLength);
+        var child = this.children[i];
+
+        callback = this.callbackFromArray(child, method, methodLength);
 
         if (context && callback)
         {
-            callbackContext = this.callbackFromArray(this.children[i], context, contextLength);
+            callbackContext = this.callbackFromArray(child, context, contextLength);
 
-            if (callback)
-            {
-                callback.apply(callbackContext, args);
-            }
+            callback.apply(callbackContext, args);
         }
         else if (callback)
         {
-            callback.apply(this.children[i], args);
+            callback.apply(child, args);
         }
     }
 
@@ -35422,9 +35423,11 @@ Phaser.Group.prototype.forEach = function (callback, callbackContext, checkExist
     {
         for (var i = 0; i < this.children.length; i++)
         {
-            if (!checkExists || (checkExists && this.children[i].exists))
+            var child = this.children[i];
+
+            if (!checkExists || child.exists)
             {
-                callback.call(callbackContext, this.children[i]);
+                callback.call(callbackContext, child);
             }
         }
     }
@@ -35441,9 +35444,11 @@ Phaser.Group.prototype.forEach = function (callback, callbackContext, checkExist
 
         for (var i = 0; i < this.children.length; i++)
         {
-            if (!checkExists || (checkExists && this.children[i].exists))
+            var child = this.children[i];
+
+            if (!checkExists || child.exists)
             {
-                args[0] = this.children[i];
+                args[0] = child;
                 callback.apply(callbackContext, args);
             }
         }
@@ -46167,7 +46172,7 @@ Phaser.Gamepad.PS3XC_STICK_RIGHT_Y = 3; // analog stick, range -1..1
 
 /**
 * A single Phaser Gamepad
-* 
+*
 * @class Phaser.SinglePad
 * @constructor
 * @param {Phaser.Game} game - Current game instance.
@@ -46281,7 +46286,7 @@ Phaser.SinglePad.prototype = {
 
     /**
     * Add callbacks to this Gamepad to handle connect / disconnect / button down / button up / axis change / float value buttons.
-    * 
+    *
     * @method Phaser.SinglePad#addCallbacks
     * @param {object} context - The context under which the callbacks are run.
     * @param {object} callbacks - Object that takes six different callbak methods:
@@ -46327,13 +46332,13 @@ Phaser.SinglePad.prototype = {
 
     /**
     * Main update function called by Phaser.Gamepad.
-    * 
+    *
     * @method Phaser.SinglePad#pollStatus
     */
     pollStatus: function ()
     {
 
-        if (!this.connected || !this.game.input.enabled || !this.game.input.gamepad.enabled || (this._rawPad && this._rawPad.timestamp && (this._rawPad.timestamp === this._prevTimestamp)))
+        if (!this.connected || !this.game.input.enabled || !this.game.input.gamepad.enabled || !this._rawPad || (this._rawPad && this._rawPad.timestamp && (this._rawPad.timestamp === this._prevTimestamp)))
         {
             return;
         }
@@ -46358,7 +46363,7 @@ Phaser.SinglePad.prototype = {
                 }
             }
         }
-        
+
         for (var index = 0; index < this._axesLen; index++)
         {
             var value = this._rawPad.axes[index];
@@ -46379,7 +46384,7 @@ Phaser.SinglePad.prototype = {
 
     /**
     * Gamepad connect function, should be called by Phaser.Gamepad.
-    * 
+    *
     * @method Phaser.SinglePad#connect
     * @param {object} rawPad - The raw gamepad object
     */
@@ -46424,7 +46429,7 @@ Phaser.SinglePad.prototype = {
 
     /**
     * Gamepad disconnect function, should be called by Phaser.Gamepad.
-    * 
+    *
     * @method Phaser.SinglePad#disconnect
     */
     disconnect: function ()
@@ -46493,7 +46498,7 @@ Phaser.SinglePad.prototype = {
 
     /**
     * Handles changes in axis.
-    * 
+    *
     * @method Phaser.SinglePad#processAxisChange
     * @param {object} axisState - State of the relevant axis
     */
@@ -46521,7 +46526,7 @@ Phaser.SinglePad.prototype = {
 
     /**
     * Handles button down press.
-    * 
+    *
     * @method Phaser.SinglePad#processButtonDown
     * @param {number} buttonCode - Which buttonCode of this button
     * @param {object} value - Button value
@@ -46548,7 +46553,7 @@ Phaser.SinglePad.prototype = {
 
     /**
     * Handles button release.
-    * 
+    *
     * @method Phaser.SinglePad#processButtonUp
     * @param {number} buttonCode - Which buttonCode of this button
     * @param {object} value - Button value
@@ -46575,7 +46580,7 @@ Phaser.SinglePad.prototype = {
 
     /**
     * Handles buttons with floating values (like analog buttons that acts almost like an axis but still registers like a button)
-    * 
+    *
     * @method Phaser.SinglePad#processButtonFloat
     * @param {number} buttonCode - Which buttonCode of this button
     * @param {object} value - Button value (will range somewhere between 0 and 1, but not specifically 0 or 1.
@@ -46602,7 +46607,7 @@ Phaser.SinglePad.prototype = {
 
     /**
     * Returns value of requested axis.
-    * 
+    *
     * @method Phaser.SinglePad#axis
     * @param {number} axisCode - The index of the axis to check
     * @return {number} Axis value if available otherwise false
@@ -46621,7 +46626,7 @@ Phaser.SinglePad.prototype = {
 
     /**
     * Returns true if the button is pressed down.
-    * 
+    *
     * @method Phaser.SinglePad#isDown
     * @param {number} buttonCode - The buttonCode of the button to check.
     * @return {boolean} True if the button is pressed down.
@@ -46640,7 +46645,7 @@ Phaser.SinglePad.prototype = {
 
     /**
     * Returns true if the button is not currently pressed.
-    * 
+    *
     * @method Phaser.SinglePad#isUp
     * @param {number} buttonCode - The buttonCode of the button to check.
     * @return {boolean} True if the button is not currently pressed down.
@@ -46659,7 +46664,7 @@ Phaser.SinglePad.prototype = {
 
     /**
     * Returns the "just released" state of a button from this gamepad. Just released is considered as being true if the button was released within the duration given (default 250ms).
-    * 
+    *
     * @method Phaser.SinglePad#justReleased
     * @param {number} buttonCode - The buttonCode of the button to check for.
     * @param {number} [duration=250] - The duration below which the button is considered as being just released.
@@ -46677,7 +46682,7 @@ Phaser.SinglePad.prototype = {
 
     /**
     * Returns the "just pressed" state of a button from this gamepad. Just pressed is considered true if the button was pressed down within the duration given (default 250ms).
-    * 
+    *
     * @method Phaser.SinglePad#justPressed
     * @param {number} buttonCode - The buttonCode of the button to check for.
     * @param {number} [duration=250] - The duration below which the button is considered as being just pressed.
@@ -46696,7 +46701,7 @@ Phaser.SinglePad.prototype = {
     /**
     * Returns the value of a gamepad button. Intended mainly for cases when you have floating button values, for example
     * analog trigger buttons on the XBOX 360 controller.
-    * 
+    *
     * @method Phaser.SinglePad#buttonValue
     * @param {number} buttonCode - The buttonCode of the button to check.
     * @return {number} Button value if available otherwise null. Be careful as this can incorrectly evaluate to 0.
@@ -46715,7 +46720,7 @@ Phaser.SinglePad.prototype = {
 
     /**
     * Reset all buttons/axes of this gamepad.
-    * 
+    *
     * @method Phaser.SinglePad#reset
     */
     reset: function ()
@@ -56000,7 +56005,7 @@ Object.defineProperty(Phaser.BitmapData.prototype, 'smoothed', {
     get: function ()
     {
 
-        Phaser.Canvas.getSmoothingEnabled(this.context);
+        return Phaser.Canvas.getSmoothingEnabled(this.context);
 
     },
 
@@ -62931,7 +62936,7 @@ Phaser.BitmapText.prototype.scanLine = function (data, scale, text)
     {
         var end = (i === text.length - 1) ? true : false;
 
-        if (/(?:\r\n|\r|\n)/.test(text.charAt(i)))
+        if ((/(?:\r\n|\r|\n)/).test(text.charAt(i)))
         {
             return { width: w, text: text.substr(0, i), end: end, chars: chars };
         }
@@ -62954,7 +62959,7 @@ Phaser.BitmapText.prototype.scanLine = function (data, scale, text)
             var kerning = (prevCharCode && charData.kerning[prevCharCode]) ? charData.kerning[prevCharCode] : 0;
 
             //  Record the last space in the string and the current width
-            if (/(\s)/.test(text.charAt(i)))
+            if ((/(\s)/).test(text.charAt(i)))
             {
                 lastSpace = i;
                 wrappedWidth = w;
@@ -66581,45 +66586,45 @@ Phaser.Device._initialize = function ()
 
         var ua = navigator.userAgent;
 
-        if (/Playstation Vita/.test(ua))
+        if ((/Playstation Vita/).test(ua))
         {
             device.vita = true;
         }
-        else if (/Kindle/.test(ua) || (/\bKF[A-Z][A-Z]+/).test(ua) || (/Silk.*Mobile Safari/).test(ua))
+        else if ((/Kindle/).test(ua) || (/\bKF[A-Z][A-Z]+/).test(ua) || (/Silk.*Mobile Safari/).test(ua))
         {
             device.kindle = true;
 
             // This will NOT detect early generations of Kindle Fire, I think there is no reliable way...
             // E.g. "Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10_6_3; en-us; Silk/1.1.0-80) AppleWebKit/533.16 (KHTML, like Gecko) Version/5.0 Safari/533.16 Silk-Accelerated=true"
         }
-        else if (/Android/.test(ua))
+        else if ((/Android/).test(ua))
         {
             device.android = true;
         }
-        else if (/CrOS/.test(ua))
+        else if ((/CrOS/).test(ua))
         {
             device.chromeOS = true;
         }
-        else if (/iP[ao]d|iPhone/i.test(ua))
+        else if ((/iP[ao]d|iPhone/i).test(ua))
         {
             device.iOS = true;
             (navigator.appVersion).match(/OS (\d+)/);
             device.iOSVersion = parseInt(RegExp.$1, 10);
         }
-        else if (/Linux/.test(ua))
+        else if ((/Linux/).test(ua))
         {
             device.linux = true;
         }
-        else if (/Mac OS/.test(ua))
+        else if ((/Mac OS/).test(ua))
         {
             device.macOS = true;
         }
-        else if (/Windows/.test(ua))
+        else if ((/Windows/).test(ua))
         {
             device.windows = true;
         }
 
-        if (/Windows Phone/i.test(ua) || (/IEMobile/i).test(ua))
+        if ((/Windows Phone/i).test(ua) || (/IEMobile/i).test(ua))
         {
             device.android = false;
             device.iOS = false;
@@ -66636,7 +66641,7 @@ Phaser.Device._initialize = function ()
         }
 
         //  Windows Phone / Table reset
-        if (device.windowsPhone || ((/Windows NT/i.test(ua)) && (/Touch/i.test(ua))))
+        if (device.windowsPhone || (((/Windows NT/i).test(ua)) && ((/Touch/i).test(ua))))
         {
             device.desktop = false;
         }
@@ -66864,55 +66869,55 @@ Phaser.Device._initialize = function ()
 
         var ua = navigator.userAgent;
 
-        if (/Arora/.test(ua))
+        if ((/Arora/).test(ua))
         {
             device.arora = true;
         }
-        else if (/Edge\/\d+/.test(ua))
+        else if ((/Edge\/\d+/).test(ua))
         {
             device.edge = true;
         }
-        else if (/Chrome\/(\d+)/.test(ua) && !device.windowsPhone)
+        else if ((/Chrome\/(\d+)/).test(ua) && !device.windowsPhone)
         {
             device.chrome = true;
             device.chromeVersion = parseInt(RegExp.$1, 10);
         }
-        else if (/Epiphany/.test(ua))
+        else if ((/Epiphany/).test(ua))
         {
             device.epiphany = true;
         }
-        else if (/Firefox\D+(\d+)/.test(ua))
+        else if ((/Firefox\D+(\d+)/).test(ua))
         {
             device.firefox = true;
             device.firefoxVersion = parseInt(RegExp.$1, 10);
         }
-        else if (/AppleWebKit/.test(ua) && device.iOS)
+        else if ((/AppleWebKit/).test(ua) && device.iOS)
         {
             device.mobileSafari = true;
         }
-        else if (/MSIE (\d+\.\d+);/.test(ua))
+        else if ((/MSIE (\d+\.\d+);/).test(ua))
         {
             device.ie = true;
             device.ieVersion = parseInt(RegExp.$1, 10);
         }
-        else if (/Midori/.test(ua))
+        else if ((/Midori/).test(ua))
         {
             device.midori = true;
         }
-        else if (/Opera/.test(ua))
+        else if ((/Opera/).test(ua))
         {
             device.opera = true;
         }
-        else if (/Safari\/(\d+)/.test(ua) && !device.windowsPhone)
+        else if ((/Safari\/(\d+)/).test(ua) && !device.windowsPhone)
         {
             device.safari = true;
 
-            if (/Version\/(\d+)\./.test(ua))
+            if ((/Version\/(\d+)\./).test(ua))
             {
                 device.safariVersion = parseInt(RegExp.$1, 10);
             }
         }
-        else if (/Trident\/(\d+\.\d+)(.*)rv:(\d+\.\d+)/.test(ua))
+        else if ((/Trident\/(\d+\.\d+)(.*)rv:(\d+\.\d+)/).test(ua))
         {
             device.ie = true;
             device.trident = true;
@@ -66921,7 +66926,7 @@ Phaser.Device._initialize = function ()
         }
 
         //  Silk gets its own if clause because its ua also contains 'Safari'
-        if (/Silk/.test(ua))
+        if ((/Silk/).test(ua))
         {
             device.silk = true;
         }
@@ -66971,7 +66976,7 @@ Phaser.Device._initialize = function ()
             device.ejecta = true;
         }
 
-        if (/Crosswalk/.test(ua))
+        if ((/Crosswalk/).test(ua))
         {
             device.crosswalk = true;
         }
@@ -67076,7 +67081,7 @@ Phaser.Device._initialize = function ()
                     }
                     else if (device.safari && device.safariVersion >= 9)
                     {
-                        if (/Mac OS X (\d+)_(\d+)/.test(navigator.userAgent))
+                        if ((/Mac OS X (\d+)_(\d+)/).test(navigator.userAgent))
                         {
                             var major = parseInt(RegExp.$1, 10);
                             var minor = parseInt(RegExp.$2, 10);
@@ -71888,7 +71893,7 @@ Phaser.TweenData.prototype = {
                 if (typeof this.vEnd[property] === 'string')
                 {
                     //  Parses relative end values with start as base (e.g.: +10, -3)
-                    this.vEnd[property] = this.vStart[property] + parseFloat(this.vEnd[property], 10);
+                    this.vEnd[property] = this.vStart[property] + parseFloat(this.vEnd[property]);
                 }
 
                 this.parent.properties[property] = this.vEnd[property];
@@ -72579,8 +72584,7 @@ Phaser.Easing = {
                 p = 0.4;
             if (k === 0) { return 0; }
             if (k === 1) { return 1; }
-            if (!a || a < 1) { a = 1; s = p / 4; }
-            else { s = p * Math.asin(1 / a) / (2 * Math.PI); }
+            s = p * Math.asin(1 / a) / (2 * Math.PI);
             return - (a * Math.pow(2, 10 * (k -= 1)) * Math.sin((k - s) * (2 * Math.PI) / p));
 
         },
@@ -72600,8 +72604,7 @@ Phaser.Easing = {
                 p = 0.4;
             if (k === 0) { return 0; }
             if (k === 1) { return 1; }
-            if (!a || a < 1) { a = 1; s = p / 4; }
-            else { s = p * Math.asin(1 / a) / (2 * Math.PI); }
+            s = p * Math.asin(1 / a) / (2 * Math.PI);
             return (a * Math.pow(2, - 10 * k) * Math.sin((k - s) * (2 * Math.PI) / p) + 1);
 
         },
@@ -72621,8 +72624,7 @@ Phaser.Easing = {
                 p = 0.4;
             if (k === 0) { return 0; }
             if (k === 1) { return 1; }
-            if (!a || a < 1) { a = 1; s = p / 4; }
-            else { s = p * Math.asin(1 / a) / (2 * Math.PI); }
+            s = p * Math.asin(1 / a) / (2 * Math.PI);
             if ((k *= 2) < 1) { return - 0.5 * (a * Math.pow(2, 10 * (k -= 1)) * Math.sin((k - s) * (2 * Math.PI) / p)); }
             return a * Math.pow(2, -10 * (k -= 1)) * Math.sin((k - s) * (2 * Math.PI) / p) * 0.5 + 1;
 
@@ -74394,7 +74396,7 @@ Phaser.AnimationManager = function (sprite)
     /**
     * The currently displayed Frame of animation, if any.
     * This property is only set once an Animation starts playing. Until that point it remains set as `null`.
-    * 
+    *
     * @property {Phaser.Frame} currentFrame
     * @default
     */
@@ -74617,10 +74619,10 @@ Phaser.AnimationManager.prototype = {
 
     /**
     * Play an animation based on the given key. The animation should previously have been added via `animations.add`
-    * 
-    * If the requested animation is already playing this request will be ignored. 
+    *
+    * If the requested animation is already playing this request will be ignored.
     * If you need to reset an already running animation do so directly on the Animation object itself.
-    * 
+    *
     * If you need to jump to a specific frame of this animation, then call `play` and immediately after it,
     * set the frame you require (i.e. `animation.play(); animation.frame = 4`).
     *
@@ -74869,10 +74871,7 @@ Object.defineProperty(Phaser.AnimationManager.prototype, 'name', {
     get: function ()
     {
 
-        if (this.currentAnim)
-        {
-            return this.currentAnim.name;
-        }
+        return (this.currentAnim) ? this.currentAnim.name : undefined;
 
     }
 
@@ -74887,10 +74886,7 @@ Object.defineProperty(Phaser.AnimationManager.prototype, 'frame', {
     get: function ()
     {
 
-        if (this.currentFrame)
-        {
-            return this.currentFrame.index;
-        }
+        return (this.currentFrame) ? this.currentFrame.index : undefined;
 
     },
 
@@ -74918,10 +74914,7 @@ Object.defineProperty(Phaser.AnimationManager.prototype, 'frameName', {
     get: function ()
     {
 
-        if (this.currentFrame)
-        {
-            return this.currentFrame.name;
-        }
+        return (this.currentFrame) ? this.currentFrame.name : undefined;
 
     },
 
@@ -75474,7 +75467,7 @@ Phaser.Animation.prototype = {
 
         this.currentFrame = this._frameData.getFrame(this._frames[this._frameIndex]);
 
-        if (this.currentFrame && (fromPlay || (!fromPlay && idx !== this.currentFrame.index)))
+        if (this.currentFrame && (fromPlay || (idx !== this.currentFrame.index)))
         {
             this._parent.setFrame(this.currentFrame);
         }
@@ -104403,7 +104396,7 @@ Phaser.Tilemap.prototype = {
 
             if (found)
             {
-                var sprite = new CustomClass(this.game, parseFloat(obj.x, 10), parseFloat(obj.y, 10), key, frame);
+                var sprite = new CustomClass(this.game, parseFloat(obj.x), parseFloat(obj.y), key, frame);
 
                 sprite.name = obj.name;
                 sprite.autoCull = autoCull;
